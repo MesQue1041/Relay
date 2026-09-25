@@ -1,0 +1,73 @@
+cases:
+
+  - id: time_01
+    utterance: "What time is it?"
+    expected_tools:
+      - get_current_time
+    latency_budget_seconds: 3.0
+
+  - id: time_02
+    utterance: "Can you tell me the current time?"
+    expected_tools:
+      - get_current_time
+    latency_budget_seconds: 3.0
+
+  - id: weather_01
+    utterance: "What's the weather in Colombo?"
+    expected_tools:
+      - get_weather
+    latency_budget_seconds: 6.0
+
+  - id: weather_02
+    utterance: "What's the weather like in Negombo?"
+    expected_tools:
+      - get_weather
+    latency_budget_seconds: 6.0
+
+  - id: weather_03
+    utterance: "Tell me the current weather in London."
+    expected_tools:
+      - get_weather
+    latency_budget_seconds: 6.0
+
+  - id: search_01
+    utterance: "Search the web for the latest information about Python."
+    expected_tools:
+      - web_search
+    latency_budget_seconds: 6.0
+
+  - id: search_02
+    utterance: "Can you search the web for what quantum computing means?"
+    expected_tools:
+      - web_search
+    latency_budget_seconds: 6.0
+
+  - id: direct_01
+    utterance: "What is the capital of France?"
+    expected_tools: []
+    latency_budget_seconds: 3.0
+
+  - id: direct_02
+    utterance: "Explain recursion in one sentence."
+    expected_tools: []
+    latency_budget_seconds: 3.0
+
+  - id: direct_03
+    utterance: "What is the largest planet in our solar system?"
+    expected_tools: []
+    latency_budget_seconds: 3.0
+
+  - id: direct_04
+    utterance: "Give me a short definition of machine learning."
+    expected_tools: []
+    latency_budget_seconds: 3.0
+
+  - id: direct_05
+    utterance: "Why is the sky blue?"
+    expected_tools: []
+    latency_budget_seconds: 3.0
+
+  - id: direct_06
+    utterance: "Give me a one sentence explanation of APIs."
+    expected_tools: []
+    latency_budget_seconds: 3.0

@@ -1,77 +1,74 @@
-import os
-import time
-from pathlib import Path
+import threading
+import av
+import numpy as np
+import sounddevice as sd
 
-import pygame
+OUTPUT_SAMPLE_RATE = 24000
+OUTPUT_CHANNELS = 1
+
+_stream_lock = threading.Lock()
+_stream = None
+
+def _get_stream():
+    global _stream
+    with _stream_lock:
+        if _stream is None:
+            _stream = sd.OutputStream(
+                samplerate=OUTPUT_SAMPLE_RATE,
+                channels=OUTPUT_CHANNELS,
+                dtype="int16",
+                blocksize=0,
+                latency="low",
+            )
+            _stream.start()
+    return _stream
 
 
-_initialized = False
+def warmup():
+    _get_stream()
 
 
-def _ensure_initialized() -> None:
-    global _initialized
+def _write_frames(stream, resampler, frame):
+    for resampled in resampler.resample(frame):
+        data = resampled.to_ndarray()
+        if data.ndim == 2:
+            data = data.reshape(-1)
+        data = np.asarray(data, dtype=np.int16)
+        stream.write(data.reshape(-1, 1))
 
-    if _initialized:
+
+def play_audio_stream(audio_chunks, stop_event=None):
+    stream = _get_stream()
+    decoder = av.CodecContext.create("mp3", "r")
+    resampler = av.audio.resampler.AudioResampler(
+        format="s16", layout="mono", rate=OUTPUT_SAMPLE_RATE,
+    )
+
+    for audio_chunk in audio_chunks:
+        if stop_event is not None and stop_event.is_set():
+            return
+        for packet in decoder.parse(audio_chunk):
+            for frame in decoder.decode(packet):
+                _write_frames(stream, resampler, frame)
+
+    if stop_event is not None and stop_event.is_set():
         return
 
-    try:
-        pygame.mixer.init()
-        _initialized = True
+    for packet in decoder.parse(b""):
+        for frame in decoder.decode(packet):
+            _write_frames(stream, resampler, frame)
 
-    except Exception as exc:
-        raise RuntimeError(
-            f"Could not initialize audio playback: {exc}"
-        ) from exc
+    for frame in decoder.decode(None):
+        _write_frames(stream, resampler, frame)
 
 
-def play_audio(audio_path: str) -> None:
-    path = Path(audio_path)
-
-    if not path.exists():
-        raise FileNotFoundError(
-            f"Audio file not found: {audio_path}"
-        )
-
-    try:
-        _ensure_initialized()
-
-        pygame.mixer.music.load(str(path))
-        pygame.mixer.music.play()
-
-        # Wait until the response has finished playing.
-        while pygame.mixer.music.get_busy():
-            time.sleep(0.01)
-
-    except Exception as exc:
-        raise RuntimeError(
-            f"Audio playback failed: {exc}"
-        ) from exc
-
-
-def cleanup_audio_file(audio_path: str) -> None:
-    if not audio_path:
-        return
-
-    try:
-        pygame.mixer.music.stop()
-    except Exception:
-        pass
-
-    try:
-        if os.path.exists(audio_path):
-            os.remove(audio_path)
-    except OSError:
-        pass
-
-
-def shutdown() -> None:
-    global _initialized
-
-    if not _initialized:
-        return
-
-    try:
-        pygame.mixer.music.stop()
-        pygame.mixer.quit()
-    finally:
-        _initialized = False
+def shutdown():
+    global _stream
+    with _stream_lock:
+        if _stream is not None:
+            try:
+                _stream.stop()
+                _stream.close()
+            except Exception:
+                pass
+            _stream = None
