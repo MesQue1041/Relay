@@ -2,7 +2,7 @@ import time
 from collections import defaultdict
 
 
-class LatencyTracker:
+class LatencyTracker:                     # notebook taht stores latency measurements for each stage of the pipeline
     def __init__(self):
         self.durations = defaultdict(list)
 
