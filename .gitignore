@@ -1,0 +1,16 @@
+# Virtual environment
+venv/
+.venv/
+
+# Secrets — never commit this
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# OS / editor junk
+.DS_Store
+
+# faster-whisper caches downloaded models here on first run
+.cache/
