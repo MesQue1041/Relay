@@ -11,7 +11,7 @@ class LatencyTracker:                     # notebook taht stores latency measure
 
     def summary(self):
         out = {}
-        for stage, values in self.durations.items():
+        for stage, values in self.durations.items():    
             out[stage] = {
                 "last": values[-1],
                 "count": len(values),

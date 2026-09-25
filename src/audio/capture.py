@@ -1,6 +1,8 @@
 import queue
+import numpy as np
 import sounddevice as sd
-from src.config import AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, VAD_FRAME_DURATION_MS
+
+from src.config import AUDIO_SAMPLE_RATE, AUDIO_CHANNELS, VAD_FRAME_DURATION_MS, MIC_GAIN
 
 FRAME_SAMPLES = int(AUDIO_SAMPLE_RATE * VAD_FRAME_DURATION_MS / 1000)
 
@@ -13,16 +15,17 @@ class MicStream:
     def _callback(self, indata, frames, time_info, status):
         if status:
             print(f"[MicStream] audio status: {status}")
-
-        self._queue.put(indata.tobytes())
+        amplified = np.clip(
+            indata.astype(np.int32) * MIC_GAIN, -32768, 32767
+        ).astype(np.int16)
+        self._queue.put(amplified.tobytes())
 
     def start(self):
         self._stream = sd.InputStream(
             samplerate=AUDIO_SAMPLE_RATE,
             channels=AUDIO_CHANNELS,
-            dtype="int16",             
-            blocksize=FRAME_SAMPLES,   
-                                      
+            dtype="int16",
+            blocksize=FRAME_SAMPLES,
             callback=self._callback,
         )
         self._stream.start()

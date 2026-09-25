@@ -1,9 +1,12 @@
-groq                    # Talks to Groq's OpenAI-compatible API for the agent's LLM calls
-faster-whisper          # CTranslate2 reimplementation of Whisper — much faster/lighter than openai-whisper
-edge-tts                # Free, no API key needed — uses Microsoft Edge's online TTS voices
-webrtcvad               # Lightweight VAD from the WebRTC project — flags speech vs. silence per audio frame
-sounddevice             # Cross-platform mic capture + speaker playback (wraps PortAudio)
-soundfile               # Reads/writes .wav files, used for sample_audio and any recorded clips
-numpy                   # Audio buffers are numpy arrays under the hood
-python-dotenv           # Loads GROQ_API_KEY etc. from .env into environment variables
-pyyaml                  # Parses evals/cases.yaml for the eval harness (added later)
+groq
+faster-whisper
+edge-tts
+webrtcvad
+sounddevice
+soundfile
+numpy
+python-dotenv
+pyyaml
+setuptools<81
+requests
+pygame
